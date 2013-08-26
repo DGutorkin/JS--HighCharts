@@ -17,12 +17,7 @@ get '/' => sub {
 
     # hashref $hc should be taken from JS::HighCharts
     my $hc =  { 
-        js => '<script>
-function myFunction()
-{
-alert("Hello! I am an alert box!");
-}
-</script>',
+        js => '<script>function myFunction() { alert("Hello! I am an alert box!"); }</script>',
         container => '<input type="button" onclick="myFunction()" value="Show alert box" />',
     };
 
