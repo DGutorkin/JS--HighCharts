@@ -16,10 +16,7 @@ get '/' => sub {
     my $self = shift;
 
     # hashref $hc should be taken from JS::HighCharts
-    my $hc =  { 
-        js => '<script>function myFunction() { alert("Hello! I am an alert box!"); }</script>',
-        container => '<input type="button" onclick="myFunction()" value="Show alert box" />',
-    };
+    my $hc =  JS::HighCharts->new();
 
   $self->stash->{hc} =  $hc;
   $self->render('test');

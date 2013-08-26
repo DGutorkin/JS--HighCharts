@@ -26,7 +26,61 @@ Perhaps a little code snippet.
 
     my $foo = JS::HighCharts->new();
     ...
+=cut
 
+
+sub new {
+    my $class = shift;
+
+    my %self = ();
+    %self = %$class if ref $class;
+
+    $class = ref $class || $class;
+    %self = (%self, @_);
+
+    my $self = \%self;
+
+    $self->{lib_src} //= '
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        <script src="http://code.highcharts.com/highcharts.js"></script>
+    ';
+    $self->{js} //= "
+    <script>
+    \$(function () { 
+    \$('#container').highcharts({
+        chart: {
+            type: 'bar'
+        },
+        title: {
+            text: 'Fruit Consumption'
+        },
+        xAxis: {
+            categories: ['Apples', 'Bananas', 'Oranges']
+        },
+        yAxis: {
+            title: {
+                text: 'Fruit eaten'
+            }
+        },
+        series: [{
+            name: 'Jane',
+            data: [1, 0, 4]
+        }, {
+            name: 'John',
+            data: [5, 7, 3]
+        }]
+    });
+});
+//
+</script>
+    ";
+     $self->{container} //= '
+     <div id="container" style="width:100%; height:400px;"></div>
+     ';
+
+    bless $self, $class;
+    return $self;
+}
 
 
 =head1 AUTHOR

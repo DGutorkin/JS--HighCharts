@@ -19,6 +19,7 @@ WriteMakefile(
     },
     PREREQ_PM => {
 	'Template' => 0,
+	'Mojo::JSON' => 0,
 	
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
