@@ -1,9 +1,8 @@
 <html>
     <head>
+        [% hc.lib_src %]
         [% hc.js %]
     </head>
 
-    <body>
-        <div>This is container: [% hc.container %]</div>
-    </body>
+    <body>[% hc.container %]</body>
 </html>
