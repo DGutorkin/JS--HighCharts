@@ -1,0 +1,9 @@
+<html>
+    <head>
+        [% hc.js %]
+    </head>
+
+    <body>
+        <div>This is container: [% hc.container %]</div>
+    </body>
+</html>
