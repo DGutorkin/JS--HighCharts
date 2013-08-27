@@ -18,14 +18,31 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
+This is just a wrapper for JavaScript library - HighCharts. 
+This module simplify getting cool charts by creating typical perl objects and setting appropriate attributes.
 
     use JS::HighCharts;
 
-    my $foo = JS::HighCharts->new();
-    ...
+    my $hc = JS::HighCharts->new(
+        lib_src => [ ],
+        ...
+    );
+
+After setting an object, you'll get all the code you need back by calling method:
+
+    my $chart = $hc->get_chart;
+
+You can use this in your templates (ex. Template::Toolkit) by setting 3 variables:
+
+    <head>
+        [% chart.lib_src %]
+        [% chart.js %]
+    </head>
+    <body>
+        [% chart.container %]
+    </body>
+
+And this is all you need to get the cool chart, provided by HighCharts library ;)
 
 =cut
 
@@ -83,6 +100,16 @@ sub new {
 }
 
 
+sub get_chart {
+    my $self = shift;
+
+    return {
+        lib_src => $self->{lib_src},
+        js => $self->{js},
+        container => $self->{container},
+    };
+}
+
 =head1 AUTHOR
 
 MDn, C<< <maddemon at gmail.com> >>
@@ -125,8 +152,9 @@ L<http://search.cpan.org/dist/JS-HighCharts/>
 
 =back
 
+=head1 SEE ALSO
 
-=head1 ACKNOWLEDGEMENTS
+L<http://www.highcharts.com>, L<Template>, L<Mojolicious::Plugin::TtRenderer>.
 
 
 =head1 LICENSE AND COPYRIGHT
