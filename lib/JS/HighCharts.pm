@@ -2,6 +2,7 @@ package JS::HighCharts;
 
 use Modern::Perl;
 use warnings FATAL => 'all';
+use Mojo::JSON;
 
 =head1 NAME
 
@@ -9,12 +10,11 @@ JS::HighCharts - Perl wrapper for fun usage of HighCharts JS library
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
-
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -27,6 +27,16 @@ This module simplify getting cool charts by creating typical perl objects and se
         lib_src => [ ],
         ...
     );
+
+Now you have to draw something on your chart. You need at least one data collection:
+
+    $hc->add_series({
+        name => 'Vovka',
+        data => [1, 2, 3, 4, 5],
+    });
+
+You can also set all titles and types in one expression:
+    $hc->set_chart_type('line')->set_title('New chart')->set_y_title('This is subtitile');
 
 After setting an object, you'll get all the code you need back by calling method:
 
@@ -46,6 +56,8 @@ And this is all you need to get the cool chart, provided by HighCharts library ;
 
 =cut
 
+my $json  = Mojo::JSON->new;
+
 
 sub new {
     my $class = shift;
@@ -59,55 +71,140 @@ sub new {
     my $self = \%self;
 
     $self->{lib_src} //= [ 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js', 'http://code.highcharts.com/highcharts.js' ];
-    $self->{lib_src} = join "\n", map { "<script src='$_'></script>" } @{ $self->{lib_src} };
+    $self->{lib_src} = join "\n", map { "<script type='text/javascript' src='$_'></script>" } @{ $self->{lib_src} };
 
-    $self->{js} //= "
-    <script>
-    \$(function () { 
-    \$('#container').highcharts({
-        chart: {
-            type: 'bar'
-        },
-        title: {
-            text: 'Fruit Consumption'
-        },
-        xAxis: {
-            categories: ['Apples', 'Bananas', 'Oranges']
-        },
-        yAxis: {
-            title: {
-                text: 'Fruit eaten'
-            }
-        },
-        series: [{
-            name: 'Jane',
-            data: [1, 0, 4]
-        }, {
-            name: 'John',
-            data: [5, 7, 3]
-        }]
-    });
-});
-//
-</script>
-    ";
      $self->{container} //= '
      <div id="container" style="width:100%; height:400px;"></div>
      ';
+
+     $self->{required_data} = {}; # this is general hash for serialization to JSON.
 
     bless $self, $class;
     return $self;
 }
 
+=head2 set_chart_type
+
+Set chart type. 'bar' and 'line' types tested successfully.
+    $hc->set_chart_type('bar');
+Default value is 'bar'.
+
+=cut
+
+sub set_chart_type {
+    my ($self, $type) = @_;
+
+    $self->{required_data}->{chart}->{type} = "$type";
+    return $self;
+}
+
+=head2 set_title
+
+Set chart title.
+    $hc->set_title('New great chart!');
+Default value for development time is: Fruit Consumption ;)
+
+=cut
+
+sub set_title {
+    my ($self, $title) = @_;
+
+    $self->{required_data}->{title}->{text} = "$title";
+    return $self;
+}
+
+=head2 set_x_axis
+
+Set collection on values for X axis. Use anonymous array as parameter.
+
+    $hc->set_x_axis(['a', 'b', 'c']);
+Default value for development time is: ['Apples', 'Bananas', 'Oranges']
+
+=cut
+
+sub set_x_axis {
+    my $self = shift;
+
+    my $params = shift;
+    my @categories = ();
+
+    @categories= @$params if ref $params;
+    @categories = (@categories, @_);
+
+    $self->{required_data}->{xAxis}->{categories} = [ @categories ];
+
+    return $self;
+}
+
+=head2 set_y_title
+
+Set Y axis title.
+    $hc->set_y_title('New subtitle');
+Default value for development time is: Fruit eaten
+
+=cut
+
+sub set_y_title {
+    my ($self, $title) = @_;
+
+    $self->{required_data}->{yAxis}->{title}->{text} = "$title";
+    return $self;
+}
+
+=head2 add_series
+
+This method define chart data: name and yAxis values.
+    $hc->add_series({
+        name => 'New line',
+        data => [1, 2, 3, 4],
+    });
+
+=cut
+
+sub add_series {
+    my $self = shift;
+    my $params = shift;
+
+    push @{ $self->{required_data}->{series} }, { name => $params->{name}, data => $params->{data} };
+
+    return $self;
+}
+
+=head2 get_chart
+
+Call this method after setting chart data. 
+You'll get back hashref, which contains all you need to put chart in your template (or anything else). (see also SYNOPSIS)
+    my $graph = $hc->get_chart;
+
+=cut
+
 
 sub get_chart {
     my $self = shift;
 
+    $self->{required_data}->{chart}->{type} //= 'bar';
+    $self->{required_data}->{title}->{text} //= 'Fruit Consumption';
+    $self->{required_data}->{xAxis}->{categories} //= ['Apples', 'Bananas', 'Oranges'];
+    $self->{required_data}->{yAxis}->{title}->{text} //= 'Fruit eaten';
+
+    my $bytes = $json->encode($self->{required_data});
+
     return {
         lib_src => $self->{lib_src},
-        js => $self->{js},
+        js => $self->_make_js_wrap($bytes),
         container => $self->{container},
     };
+}
+
+sub _make_js_wrap {
+    my ($self, $json) = @_;
+
+    return "<script>
+    \$(function () { 
+    \$('#container').highcharts($json);
+    });
+//
+</script>";
 }
 
 =head1 AUTHOR
