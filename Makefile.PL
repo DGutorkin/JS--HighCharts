@@ -19,9 +19,9 @@ WriteMakefile(
     },
     TEST_REQUIRES => {
         'Mojolicious::Lite' => 0,
+        'Template' => 0,
     },
     PREREQ_PM => {
-        'Template' => 0,
         'Mojo::JSON' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

@@ -113,6 +113,20 @@ sub set_title {
     return $self;
 }
 
+=head2 set_subtitle
+
+Set chart subtitle.
+    $hc->set_subtitle('Source: ');
+
+=cut
+
+sub set_subtitle {
+    my ($self, $subtitle) = @_;
+
+    $self->{required_data}->{subtitle}->{text} = "$subtitle";
+    return $self;
+}
+
 =head2 set_x_axis
 
 Set collection on values for X axis. Use anonymous array as parameter.
@@ -170,6 +184,47 @@ sub add_series {
     return $self;
 }
 
+=head2 extend
+
+This method allows you to extend this module functionality by using native HichCharts API, through serializiation Perl structures into JSON.
+    $hc->extend({
+        plotOptions => 
+        {
+            series => {
+                marker => {
+                    enabled => 'false',
+                    symbol => 'circle',
+                    radius => 2,
+                }
+            }
+        }
+    });
+
+=cut
+
+sub extend {
+    my $self = shift;
+    my $params = shift;
+
+    foreach my $key (keys %{$params}) {
+        if (exists $self->{required_data}{$key}) {
+            # this part is iterating over nesting hash, should take it into the separate method
+            if ( ref($params->{$key}) eq 'HASH' ) {
+                foreach my $inner_key (keys%{$params->{$key}}) { 
+                    $self->{required_data}{$key}{$inner_key} =  $params->{$key}->{$inner_key};
+                }
+            }
+            # end of iterating part
+        } 
+        else {
+            $self->{required_data}{$key} =  $params->{$key}
+        }
+    }
+
+    return $self;
+}
+
+
 =head2 get_chart
 
 Call this method after setting chart data. 
@@ -182,7 +237,7 @@ You'll get back hashref, which contains all you need to put chart in your templa
 sub get_chart {
     my $self = shift;
 
-    $self->{required_data}->{chart}->{type} //= 'bar';
+    #$self->{required_data}->{chart}->{type} //= 'bar';
     $self->{required_data}->{title}->{text} //= 'Fruit Consumption';
     $self->{required_data}->{xAxis}->{categories} //= ['Apples', 'Bananas', 'Oranges'];
     $self->{required_data}->{yAxis}->{title}->{text} //= 'Fruit eaten';

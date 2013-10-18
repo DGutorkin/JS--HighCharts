@@ -13,7 +13,6 @@ BEGIN {
 my $hc =  JS::HighCharts->new();
 
 ok(defined $hc->{'lib_src'}, "Default lib source path exists");
-ok(defined $hc->{'js'}, "Default JS-code exists");
 ok(defined $hc->{'container'}, "Default container exists");
 
 
