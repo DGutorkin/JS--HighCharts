@@ -2,7 +2,8 @@ package JS::HighCharts;
 
 use Modern::Perl;
 use warnings FATAL => 'all';
-use Mojo::JSON;
+use JSON;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -56,32 +57,7 @@ And this is all you need to get the cool chart, provided by HighCharts library ;
 
 =cut
 
-my $json  = Mojo::JSON->new;
-
-
-sub new {
-    my $class = shift;
-
-    my %self = ();
-    %self = %$class if ref $class;
-
-    $class = ref $class || $class;
-    %self = (%self, @_);
-
-    my $self = \%self;
-
-    $self->{lib_src} //= [ 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js', 'http://code.highcharts.com/highcharts.js' ];
-    $self->{lib_src} = join "\n", map { "<script type='text/javascript' src='$_'></script>" } @{ $self->{lib_src} };
-
-     $self->{container} //= '
-     <div id="container" style="width:100%; height:400px;"></div>
-     ';
-
-     $self->{required_data} = {}; # this is general hash for serialization to JSON.
-
-    bless $self, $class;
-    return $self;
-}
+my $json  = JSON->new->allow_nonref;;
 
 =head2 set_chart_type
 
@@ -124,6 +100,28 @@ sub set_subtitle {
     my ($self, $subtitle) = @_;
 
     $self->{required_data}->{subtitle}->{text} = "$subtitle";
+    return $self;
+}
+
+=head2 use_hash
+
+Easiest way to get chart from single hash.
+
+    $hc->use_hash(%data);
+
+=cut
+
+sub use_hash {
+    my ($self, %hash) = @_;
+
+    my @categories = keys %hash;
+    my @series = values %hash;
+    $self->set_x_axis([@categories]);
+    $self->add_series({
+        name => 'Chart data',
+        data => [@series],
+        });
+
     return $self;
 }
 
@@ -238,11 +236,12 @@ sub get_chart {
     my $self = shift;
 
     #$self->{required_data}->{chart}->{type} //= 'bar';
-    $self->{required_data}->{title}->{text} //= 'Fruit Consumption';
+    $self->{required_data}->{title}->{text} //= 'Chart data';
     $self->{required_data}->{xAxis}->{categories} //= ['Apples', 'Bananas', 'Oranges'];
-    $self->{required_data}->{yAxis}->{title}->{text} //= 'Fruit eaten';
+    $self->{required_data}->{yAxis}->{title}->{text} //= 'y axis';
 
     my $bytes = $json->encode($self->{required_data});
+    my $lib_src = $self->{lib_src};
 
     return {
         lib_src => $self->{lib_src},
@@ -260,6 +259,31 @@ sub _make_js_wrap {
     });
 //
 </script>";
+}
+
+
+sub new {
+    my $class = shift;
+
+    my %self = ();
+    %self = %$class if ref $class;
+
+    $class = ref $class || $class;
+    %self = (%self, @_);
+
+    my $self = \%self;
+
+    $self->{lib_src} //= [ 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js', 'http://code.highcharts.com/highcharts.js' ];
+    $self->{lib_src} = join "\n", map { "<script type='text/javascript' src='$_'></script>" } @{ $self->{lib_src} };
+
+     $self->{container} //= '
+     <div id="container" style="width:100%; height:400px;"></div>
+     ';
+
+     $self->{required_data} = {}; # this is general hash for serialization to JSON.
+
+    bless $self, $class;
+    return $self;
 }
 
 =head1 AUTHOR
