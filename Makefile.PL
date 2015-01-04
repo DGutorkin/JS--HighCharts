@@ -20,6 +20,7 @@ WriteMakefile(
     TEST_REQUIRES => {
         'Mojolicious::Lite' => 0,
         'Template' => 0,
+        'lib::abs' => 0,
     },
     PREREQ_PM => {
         'Mojo::JSON' => 0,
