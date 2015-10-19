@@ -176,8 +176,11 @@ This method define chart data: name and yAxis values.
 sub add_series {
     my $self = shift;
     my $params = shift;
-
-    push @{ $self->{required_data}->{series} }, { name => $params->{name}, data => $params->{data} };
+    my @data;
+    foreach my $elem (@{$params->{data}}) {
+        push @data, $elem +0; # converting to numeric values
+    }
+    push @{ $self->{required_data}->{series} }, { name => $params->{name}, data => \@data };
 
     return $self;
 }
