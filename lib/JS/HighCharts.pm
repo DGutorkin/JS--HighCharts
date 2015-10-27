@@ -276,7 +276,7 @@ sub new {
 
     my $self = \%self;
 
-    $self->{lib_src} //= [ 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js', 'http://code.highcharts.com/highcharts.js' ];
+    $self->{lib_src} //= [ 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js', 'https://code.highcharts.com/highcharts.js' ];
     $self->{lib_src} = join "\n", map { "<script type='text/javascript' src='$_'></script>" } @{ $self->{lib_src} };
 
      $self->{container} //= '
