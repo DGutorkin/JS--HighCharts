@@ -18,5 +18,5 @@ ok(defined $hc->{'container'}, "Default container exists");
 
 my $z = $hc->get_chart;
 
-my @required_keys = grep /lib_src|js|container/, keys $z;
+my @required_keys = grep /lib_src|js|container/, keys %$z;
 ok (scalar @required_keys eq '3', "Required keys returned in chart hashref");
